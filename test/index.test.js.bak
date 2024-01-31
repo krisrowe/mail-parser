@@ -1,0 +1,44 @@
+const assert = require('assert');
+const { request } = require('gaxios');
+const { exec } = require('child_process');
+const waitPort = require('wait-port');
+
+const startFF = async (target, signature, port) => {
+  const ff = exec(
+    `npx functions-framework --target=${target} --signature-type=${signature} --port=${port}`
+  );
+  await waitPort({ host: 'localhost', port });
+  return ff;
+};
+
+const httpInvocation = (fnUrl, port, headers) => {
+  const baseUrl = `http://localhost:${port}`;
+  return request({
+    url: `${baseUrl}/${fnUrl}`,
+    headers: headers
+  });
+};
+
+describe('index.test.js', () => {
+  describe('parse-emails function', () => {
+    const PORT = 8082;
+    let ffProc;
+
+    before(async () => {
+      ffProc = await startFF('parse-emails', 'http', PORT);
+    });
+
+    after(() => ffProc.kill());
+
+    it('should process email with given filters', async () => {
+      const headers = {
+        'EMAIL_FILTER_FROM': 'example@example.com',
+        'EMAIL_FILTER_SUBJECT': 'Reservation confirmed',
+        'EMAIL_FILTER_AFTER': '2024-01-01'
+      };
+      const response = await httpInvocation('parse-emails', PORT, headers);
+      assert.strictEqual(response.status, 200);
+      // Additional assertions can be made based on your function's logic
+    });
+  });
+});

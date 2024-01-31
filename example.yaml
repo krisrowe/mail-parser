@@ -1,0 +1,27 @@
+Transaction:
+  - property: type
+    function: literal
+    param: "transaction"
+  - property: platform
+    function: literal
+    param: "MyPlatform"
+  - property: date
+    source: body
+    function: date
+    param: "Date: (\\d{4}-\\d{2}-\\d{2})"
+  - property: amount
+    source: body
+    function: amount
+    param: "Amount: \\$([0-9,]+\\.\\d{2})"
+  - property: transactionId
+    source: body
+    function: text
+    param: "Transaction ID: ([A-Z0-9]+)"
+  - property: payer
+    source: body
+    function: text
+    param: "Payer: ([A-Za-z ]+)"
+  - property: recipient
+    source: body
+    function: text
+    param: "Recipient: ([A-Za-z ]+)"
