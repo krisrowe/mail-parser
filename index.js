@@ -95,7 +95,7 @@ async function loadConfig(type) {
             throw `Error loading configuration from storage: ${error}`;
         }
     } else {
-        log.verbose(`Configuration for type ${type} already loaded.`);
+        log.debug(`Configuration for type ${type} already loaded.`);
     }
     return configCache[type];
 }
