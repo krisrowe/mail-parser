@@ -1,0 +1,46 @@
+const chai = require('chai');
+const chaiHttp = require('chai-http');
+const { exec } = require('child_process');
+const expect = chai.expect;
+
+chai.use(chaiHttp);
+
+describe('Pub/Sub Function Test', function() {
+    let serverProcess;
+  
+    before(function(done) {
+      this.timeout(10000); // Increase timeout to 10 seconds
+  
+      // Start the function using the Functions Framework
+      serverProcess = exec('functions-framework --target=helloPubSub --signature-type=event');
+  
+      // Give the server 5 seconds to start
+      setTimeout(done, 2000);
+    });
+  
+    after(function() {
+      // Stop the server after tests
+      if (serverProcess) {
+        serverProcess.kill();
+      }
+    });
+  
+    // Your tests go here
+
+    it('should process Pub/Sub message', done => {
+        const mockMessage = {
+          data: Buffer.from('Hello, World!').toString('base64')
+        };
+    
+        chai.request('http://localhost:8080')
+          .post('/')
+          .send({ message: mockMessage })
+          .end((err, res) => {
+            // Perform your assertions here
+            expect(res).to.have.status(200);
+            // More assertions as needed
+            done();
+          });
+      });
+  });
+  

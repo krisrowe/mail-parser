@@ -28,4 +28,9 @@ describe('Email Processing Tests', function() {
 
     // More assertions as needed
   });
+
+  after(function(done) {
+    // Wait for a bit for async calls to Cloud Logging to complete. 
+    setTimeout(done, 2000);
+  });
 });

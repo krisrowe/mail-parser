@@ -31,13 +31,13 @@ gsutil iam ch serviceAccount:mailparser@${PROJECT_ID}.iam.gserviceaccount.com:ro
 
 ## Create the Pub/Sub Topic
 ```bash
-gcloud pubsub topics create output-events --project=${PROJECT_ID}
+gcloud pubsub topics create my-events --project=${PROJECT_ID}
 ```
 
 ## Grant Access to Pub/Sub Topic
 Grant the service account publish access to the Pub/Sub topic parsed-emails:
 ```bash
-gcloud pubsub topics add-iam-policy-binding output-events \
+gcloud pubsub topics add-iam-policy-binding my-events \
   --member="serviceAccount:mailparser@${PROJECT_ID}.iam.gserviceaccount.com" \
   --role="roles/pubsub.publisher" \
   --project=${PROJECT_ID}
@@ -92,4 +92,55 @@ Use the Run Mocha Tests debug configuration in VSCode under Run and Debug.
 ### Mocha Unit Tests
 ```bash
 npm test
+```
+
+
+## Deploying the Cloud Function to GCP
+To deploy this Cloud Function to Google Cloud Platform, follow these steps:
+
+###  Prerequisites
+* Ensure you have the Google Cloud SDK installed and configured for your project.
+* Make sure you are authenticated to access your Google Cloud project. You can authenticate using the command gcloud auth login.
+### Deployment Steps
+1. Navigate to the repo root directory via `cd`
+2. Deploy the Function
+Use the gcloud command to deploy your function to Cloud Functions. Run the following command in your terminal:
+```bash
+gcloud functions deploy parse-email \
+  --region=us-central1 \
+  --trigger-topic emails \
+  --runtime=nodejs20 \
+  --service-account='mailparser@'$PROJECT_ID'.iam.gserviceaccount.com' \
+  --set-env-vars OUTPUT_TOPIC='my-events' \
+  --project=$PROJECT_ID
+```
+This command will deploy the parse-emails function with the following configurations:
+
+* Region: us-central1. The function will be deployed in the us-central1 region.
+* Trigger: HTTP. This makes your function accessible over HTTP.
+* Runtime: nodejs20. Specifies Node
+
+### Define that our service account can invoke this function
+
+```bash
+gcloud functions add-iam-policy-binding parse-emails \
+  --member='serviceAccount:mailparser@'$PROJECT_ID'.iam.gserviceaccount.com' \
+  --role='roles/cloudfunctions.invoker' \
+  --project=$PROJECT_ID
+```
+
+### Invoke Cloud Function on GCP
+
+```bash
+PROJECT_ID=$(gcloud config get-value project 2>/dev/null)
+
+IDENTITY_TOKEN=$(gcloud auth print-identity-token)
+
+curl -X POST "https://us-central1-${PROJECT_ID}.cloudfunctions.net/parse-emails" \
+  -H "Authorization: bearer $IDENTITY_TOKEN" \
+  -H "EMAIL_MESSAGE_TYPE: NewAirbnbBooking" \
+  -H "EMAIL_FILTER_FROM: airbnb.com" \
+  -H "EMAIL_FILTER_SUBJECT: Reservation confirmed" \
+  -H "EMAIL_FILTER_AFTER: 2024-01-01" \
+  -H "TOPIC: airbnb"
 ```
