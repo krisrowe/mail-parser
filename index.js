@@ -11,34 +11,48 @@ const configCache = {};
 
 
 async function parseEmail(message, context) {
-    if (!message) {
-        throw "No message received.";
+    if (!message || typeof message !== 'object') {
+        throw new Error("No message received or message format is invalid.");
     }
-    // Ensure message has 'messageId' and 'data' properties
-    var messageId = message.messageId || message.id;
-    if (!message.data) {
-        throw new Error("Invalid message format. Message must have 'data'.");
-    }
-    log.info('Processing an email as pub sub message id ' + messageId);
-    const data = message.data ? Buffer.from(message.data, 'base64').toString() : '{}';
-    log.debug(`Message data length for pub sub message id ${messageId}: ${data.length}`);
-    const bookingData = JSON.parse(data);
-    log.debug("JSON parsed successfully for pub sub message id " + messageId + ".");
-    let processedData = await processEmail(bookingData);
     
+    let messageId;
+    let bookingData;
+
+    // Determine if message is a Pub/Sub message or direct payload
+    if (message.data) {
+        // Handling Pub/Sub message
+        messageId = message.messageId || message.id;
+        log.info('Processing an email as pub sub message id ' + messageId);
+        const data = Buffer.from(message.data, 'base64').toString();
+        log.debug(`Message data length for pub sub message id ${messageId}: ${data.length}`);
+        bookingData = JSON.parse(data);
+    } else if (message.type) {
+        // Handling direct payload (e.g., from testing feature)
+        log.info('Processing a direct payload without pub sub message envelope.');
+        messageId = message.id || 'DirectPayload-' + Date.now(); // Assign a unique ID for logging
+        bookingData = message; // Directly use the message as booking data
+    } else {
+        throw new Error("Invalid message format. Message must have 'data' or 'type'.");
+    }
+
+    log.debug("JSON parsed successfully for message id " + messageId + ".");
+    let processedData = await processEmail(bookingData);
+
     const outputTopicName = process.env.OUTPUT_TOPIC;
     log.debug(`Output topic name ${outputTopicName} found in environment variable OUTPUT_TOPIC.`);
     if (!outputTopicName) {
-        throw 'Output topic name must be specified using OUTPUT_TOPIC environment variable.';
+        throw new Error('Output topic name must be specified using OUTPUT_TOPIC environment variable.');
     }
     log.debug(`Publishing processed data to topic ${outputTopicName}.`);
     await publishToTopic(outputTopicName, processedData);
+    
     if (processedData.type) {
         log.info(`Published parsed email as message of type ${processedData.type} to topic ${outputTopicName}.`);
     } else {
         log.warn(`Published parsed email to topic ${outputTopicName}. No type attribute.`);
     }
-};
+}
+
 async function processEmail(emailData) {
     if (!emailData) {
         throw 'No email data received.';
