@@ -6,7 +6,7 @@ const yaml = require('js-yaml');
 const pubSubClient = new PubSub();
 const storage = new Storage();  
 
-const bucketName = 'mail-parsing-config';
+const CONFIG_BUCKET = process.env.CONFIG_BUCKET || 'mail-parsing-config';
 const configCache = {};
 
 
@@ -85,9 +85,9 @@ async function loadConfig(type) {
     if (!configCache[type]) {
         const fileName = `${type}.yaml`;
         try {
-            log.debug(`Loading configuration for type ${type} from storage bucket ${bucketName}.`);
-            const [fileContents] = await storage.bucket(bucketName).file(fileName).download();
-            log.debug(`Configuration for type ${type} loaded from storage bucket ${bucketName}.`);
+            log.debug(`Loading configuration for type ${type} from storage bucket ${CONFIG_BUCKET}.`);
+            const [fileContents] = await storage.bucket(CONFIG_BUCKET).file(fileName).download();
+            log.debug(`Configuration for type ${type} loaded from storage bucket ${CONFIG_BUCKET}.`);
             const configYaml = yaml.load(fileContents.toString('utf8'));
             log.debug(`Successfully parsed configuration for type ${type} as YAML.`)
             configCache[type] = configYaml;

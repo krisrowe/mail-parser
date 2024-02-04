@@ -23,8 +23,8 @@ steps:
       - 'functions'
       - 'deploy'
       - $_FUNCTION_NAME
-      - '--runtime=nodejs16'
-      - '--trigger-http'
+      - '--runtime=nodejs20'
+      - '--trigger-topic=emails'
       - '--entry-point=parse-email'
       - '--service-account=${_ACCOUNT_NAME}@${_TARGET_PROJECT_ID}.iam.gserviceaccount.com'
       - '--region=${_REGION}'
@@ -47,7 +47,7 @@ substitutions:
   _TARGET_PROJECT_ID: '$PROJECT_ID'
   _FUNCTION_NAME: parse-emails
   _ACCOUNT_NAME: mailparser
-  _REGION: us-central1
+  _REGION: '$LOCATION'
 
 options:
   dynamicSubstitutions: true
