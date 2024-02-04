@@ -1,0 +1,53 @@
+steps:
+  - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
+    entrypoint: 'gcloud'
+    args:
+      - 'services'
+      - 'enable'
+      - 'cloudfunctions.googleapis.com'
+      - '--project=$_TARGET_PROJECT_ID'
+
+  # Enable Cloud Build API as required to deploy Cloud Functions.
+  - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
+    entrypoint: 'gcloud'
+    args:
+      - 'services'
+      - 'enable'
+      - 'cloudbuild.googleapis.com'
+      - '--project=$_TARGET_PROJECT_ID'
+
+  # Deploy the Cloud Function using Cloud SDK
+  - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
+    entrypoint: 'gcloud'
+    args:
+      - 'functions'
+      - 'deploy'
+      - $_FUNCTION_NAME
+      - '--runtime=nodejs16'
+      - '--trigger-http'
+      - '--entry-point=parse-email'
+      - '--service-account=${_ACCOUNT_NAME}@${_TARGET_PROJECT_ID}.iam.gserviceaccount.com'
+      - '--region=${_REGION}'
+      - '--allow-unauthenticated'
+      - '--set-env-vars=CONFIG=gs://${_TARGET_PROJECT_ID}/mail-parser-config/'
+      - '--project=$_TARGET_PROJECT_ID'
+
+  # Assign permissions to the service account
+  - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
+    entrypoint: 'gcloud'
+    args:
+      - 'functions'
+      - 'add-iam-policy-binding'
+      - $_FUNCTION_NAME
+      - '--member=serviceAccount:${_ACCOUNT_NAME}@${_TARGET_PROJECT_ID}.iam.gserviceaccount.com'
+      - '--role=roles/cloudfunctions.invoker'
+      - '--project=$_TARGET_PROJECT_ID'
+
+substitutions:
+  _TARGET_PROJECT_ID: '$PROJECT_ID'
+  _FUNCTION_NAME: parse-emails
+  _ACCOUNT_NAME: mailparser
+  _REGION: us-central1
+
+options:
+  dynamicSubstitutions: true
