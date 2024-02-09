@@ -115,7 +115,15 @@ async function loadConfig(type) {
 }
 
 async function publishToTopic(topicName, data) {
-    const dataBuffer = Buffer.from(JSON.stringify(data));
+    if (!topicName) {
+        throw 'No topic name specified to publish to.';
+    }
+    if (!data || typeof data !== 'object') {
+        throw 'Must provide data to publish as an object.';
+    }
+    const pubSubClient = new PubSub()
+    const messageJSON = JSON.stringify(data);
+    const dataBuffer = Buffer.from(messageJSON);
     var success = false;
     try {
         await pubSubClient.topic(topicName).publish(dataBuffer);
@@ -132,7 +140,7 @@ async function publishToTopic(topicName, data) {
         // Note that this env var is not set to true by default, due
         // to the concerns that sensitive data may be put in the logs.
         if ((process.env.LOG_OUTPUT + "").trim().toLowerCase() == 'true') {
-            logMessage += `: ${process.env.LOG_OUTPUT}`;
+            logMessage += `: ${messageJSON}`;
         }
         console.info(logMessage);
     }
