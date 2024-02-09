@@ -115,13 +115,27 @@ async function loadConfig(type) {
 }
 
 async function publishToTopic(topicName, data) {
-  const dataBuffer = Buffer.from(JSON.stringify(data));
-  try {
-      await pubSubClient.topic(topicName).publish(dataBuffer);
-      console.log(`Message published to topic ${topicName}`);
-  } catch (error) {
-      console.error(`Error publishing message to topic ${topicName}: `, error);
-  }
+    const dataBuffer = Buffer.from(JSON.stringify(data));
+    var success = false;
+    try {
+        await pubSubClient.topic(topicName).publish(dataBuffer);
+        success = true;
+    } catch (error) {
+        console.error(`Error publishing message to topic ${topicName}: `, error);
+        success = false;
+    }
+    // Log outside the try/catch above to avoid misreporting a publish failure.
+    if (success) {
+        var logMessage = `Message published to topic ${topicName}`;
+        // Add the actual message we published to the log output only 
+        // if the LOG_OUTPUT env var has been defined accordingly. 
+        // Note that this env var is not set to true by default, due
+        // to the concerns that sensitive data may be put in the logs.
+        if ((process.env.LOG_OUTPUT + "").trim().toLowerCase() == 'true') {
+            logMessage += `: ${process.env.LOG_OUTPUT}`;
+        }
+        console.info(logMessage);
+    }
 }
 
 // Export functions if needed for testing

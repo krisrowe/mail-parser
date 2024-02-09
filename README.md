@@ -144,3 +144,18 @@ curl -X POST "https://us-central1-${PROJECT_ID}.cloudfunctions.net/parse-emails"
   -H "EMAIL_FILTER_AFTER: 2024-01-01" \
   -H "TOPIC: airbnb"
 ```
+# Environment Variables
+## Mandatory
+The following environment variables must be defined with your own values.
+These are required to run, and there are no defaults assumed in the code.
+```bash
+OUTPUT_TOPIC=my-events # example only
+```
+## Optional overrides to alter behavior
+Environment variables below are shown with the *default* values assumed
+by the application's code when the environment variables are not present.
+```bash
+PORT=8080 # the port that the web API listens on
+CONFIG_BUCKET=mail-parsing-config # the bucket for mail parsing spec yaml files
+LOG_OUTPUT=false # if true, log msgs sent to the output topic (only for non-sensitive data)
+```
