@@ -1,6 +1,6 @@
 const {PubSub} = require('@google-cloud/pubsub');
 const pubSubClient = new PubSub();
-const configCache = { };
+const processor = require('./processor');
 
 async function parseEmail(message, context) {
     if (!message || typeof message !== 'object') {
@@ -28,7 +28,7 @@ async function parseEmail(message, context) {
     }
 
     console.log("JSON parsed successfully for message id " + messageId + ".");
-    let processedData = await extractValuesFromEmail(bookingData);
+    let processedData = await processor.extractValuesFromEmail(bookingData);
 
     const outputTopicName = process.env.OUTPUT_TOPIC;
     console.log(`Output topic name ${outputTopicName} found in environment variable OUTPUT_TOPIC.`);
@@ -43,45 +43,6 @@ async function parseEmail(message, context) {
     } else {
         console.warn(`Published parsed email to topic ${outputTopicName}. No type attribute.`);
     }
-}
-
-
-async function extractValuesFromEmail(emailData) {
-    if (!emailData) {
-        throw 'No email data received.';
-    }
-    if (!emailData.type) {
-        throw 'Message type not specified.';
-    }
-
-    const rules = await require('./specs').load(emailData.type);
-    let result = {};
-    const parserModule = require('./parser.js'); // Replace with the actual path
-    
-    var contentsFound = 0;
-    for (const rule of rules) {
-        const sourceText = rule.source === 'subject' ? emailData.subject : emailData.body;
-        
-        if (typeof parserModule[rule.function] === 'function') {
-            const content = parserModule[rule.function](sourceText, rule.param);
-            if (content) {
-                result[rule.property] = content;
-                contentsFound++;
-                console.log(`Found content for property ${rule.property}.`);
-            } else {
-                console.warn(`No content found for property ${rule.property}.`);
-            }
-        } else {
-            throw `Unsupported parsing function ${rule.function} configured.`;
-        }
-    }
-    if (contentsFound === 0) {
-        throw 'No content found for any properties.';
-    } else {
-        console.info(`Found content for ${contentsFound} out of ${rules.length} properties.`);
-    }
-    
-    return result;
 }
 
 async function publishToTopic(topicName, data) {
@@ -115,10 +76,6 @@ async function publishToTopic(topicName, data) {
         console.info(logMessage);
     }
 }
-
-// Export functions if needed for testing
-exports['parse-email'] = parseEmail;
-exports.extractValuesFromEmail = extractValuesFromEmail;
 
 // Export the name assigned when deploying as a Cloud Function
 // so that the corect entry point will be found and used.

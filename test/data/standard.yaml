@@ -1,13 +1,15 @@
 standard:
   - property: type
-    function: literal
     param: "booking"
+  - property: received
+    source: "date"    
+    required: true
   - property: platform
-    function: literal
     param: "Airbnb"
   - property: checkIn
     source: body
     function: date
+    required: true
     param: "Check-in\\s+Checkout[\\s\\n]+[A-Z]{3}, (\\w+ \\d{1,2}(, \\d{4})?)"
   - property: checkOut
     source: body
@@ -17,6 +19,7 @@ standard:
     source: body
     function: text
     param: "CONFIRMATION CODE\\s+([A-Z0-9]+)"
+    required: true
   - property: guest
     source: subject
     function: text
