@@ -32,7 +32,7 @@ async function load(name) {
             throw `Error loading configuration: ${error}`;
         }
     } else {
-        log.debug(`Configuration for type ${name} already loaded.`);
+        console.log(`Configuration for type ${name} already loaded.`);
     }
     return configCache[name];
 }
