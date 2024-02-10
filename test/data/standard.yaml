@@ -1,0 +1,55 @@
+standard:
+  - property: type
+    function: literal
+    param: "booking"
+  - property: platform
+    function: literal
+    param: "Airbnb"
+  - property: checkIn
+    source: body
+    function: date
+    param: "Check-in\\s+Checkout[\\s\\n]+[A-Z]{3}, (\\w+ \\d{1,2}(, \\d{4})?)"
+  - property: checkOut
+    source: body
+    function: date
+    param: "Check-in\\s+Checkout[\\s\\n]+(?:[A-Z]{3}, \\w+ \\d{1,2}(?:, \\d{4})?[\\s\\n]+)[A-Z]{3}, (\\w+ \\d{1,2}(?:, \\d{4})?)"
+  - property: conf
+    source: body
+    function: text
+    param: "CONFIRMATION CODE\\s+([A-Z0-9]+)"
+  - property: guest
+    source: subject
+    function: text
+    param: "Reservation confirmed - (.+) arrives"
+  - property: property
+    source: body
+    function: text
+    param: "(?<=airbnb\\.com/rooms/)([0-9]+)" 
+  - property: guestPaidTotal
+    source: body
+    function: amount
+    param: "TOTAL \\(USD\\)\\s+\\$([0-9,]+\\.\\d{2})"
+  - property: cleaningFee
+    source: body
+    function: amount
+    param: "Cleaning fee\\s+\\$([0-9,]+\\.\\d{2})"
+  - property: guestServiceFee
+    source: body
+    function: amount
+    param: "Guest service fee\\s+\\$([0-9,]+\\.\\d{2})"
+  - property: occupancyTaxes
+    source: body
+    function: amount
+    param: "Occupancy taxes\\s+\\$([0-9,]+\\.\\d{2})"
+  - property: payout
+    source: body
+    function: amount
+    param: "HOST PAYOUT[\\S\\s]*?TOTAL \\(USD\\)\\s+\\$([0-9,]+\\.\\d{2})"
+  - property: rent
+    source: body
+    function: amount
+    param: "\\d+ Nights?\\s+\\$([0-9,.]+)"
+  - property: serviceFee
+    source: body
+    function: amount
+    param: "Service fee\\s+\\-\\$([0-9,]+\\.\\d{2})"

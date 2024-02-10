@@ -7,7 +7,7 @@
       {
         "type": "pwa-node",
         "request": "launch",
-        "name": "Debug Cloud Function",
+        "name": "Debug mail-parser",
         "runtimeExecutable": "npm",
         "runtimeArgs": ["run", "start"],
         "port": 9229,
@@ -39,19 +39,21 @@
       {
         "type": "node",
         "request": "launch",
-        "name": "Run Mocha Tests",
+        "name": "mail-parser Tests",
         "program": "${workspaceFolder}/node_modules/mocha/bin/_mocha",
         "args": [
           "--timeout",
           "999999",
           "--colors",
-          "${workspaceFolder}/test"
+          "${workspaceFolder}/test",
+          "-r",
+          "dotenv/config"
         ],
         "env": {
-          "GOOGLE_APPLICATION_CREDENTIALS": "${workspaceFolder}/secrets/service-account.json"
-        }
+          "DOTENV_CONFIG_PATH": "${workspaceFolder}/test.env"
+        },
         "internalConsoleOptions": "openOnSessionStart"
-      }
+      }      
       /*,
       {
         "name": "Debug Function",
