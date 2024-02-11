@@ -1,0 +1,10 @@
+version: 1.0
+properties:
+  - name: type
+    param: "cancellation"
+  - name: platform
+    param: "Airbnb"
+  - name: conf
+    source: subject
+    function: text
+    param: "Reservation ([A-Z0-9]+)"

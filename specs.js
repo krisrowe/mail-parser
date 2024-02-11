@@ -7,6 +7,13 @@ const CONFIG_BUCKET = process.env.CONFIG_BUCKET || 'mail-parsing-config';
 const configCache = {};
 
 async function load(name) {
+    // Protect against injection / directory traversal attacks by checking
+    // the format of the specified name before using it in file paths.
+    if (/^[a-zA-Z0-9-_]+$/.test(name)) {
+        console.log(`Loading configuration for spec ${name}.`);
+    } else {
+        throw `Invalid spec name: ${name}`;
+    }
     if (!configCache[name]) {
         const overridePath = process.env.OVERRIDE_SPEC_PATH;
         try {
@@ -14,7 +21,7 @@ async function load(name) {
             if (overridePath) {
                 // If OVERRIDE_SPEC_PATH is defined, read the config from the specified local path
                 console.log(`Loading override configuration for spec ${name} from OVERRIDE_SPEC_PATH: ${overridePath}.`);
-                const filePath = `${overridePath}`; // Assuming the file name follows the same convention
+                const filePath = `${overridePath}/${name}.yaml`; // Assuming the file name follows the same convention
                 const fileContents = await fs.readFile(filePath, 'utf8');
                 configYaml = yaml.load(fileContents);
                 console.log(`Configuration for spec ${name} loaded from OVERRIDE_SPEC_PATH: ${overridePath}.`);
@@ -27,7 +34,7 @@ async function load(name) {
                 configYaml = yaml.load(fileContents.toString('utf8'));
                 console.log(`Successfully parsed configuration for spec ${name} as YAML.`);
             }
-            configCache[name] = configYaml[name];
+            configCache[name] = configYaml;
         } catch (error) {
             throw `Error loading configuration: ${error}`;
         }

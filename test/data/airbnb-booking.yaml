@@ -1,58 +1,59 @@
-standard:
-  - property: type
+version: 1.0
+properties:
+  - name: type
     param: "booking"
-  - property: received
+  - name: received
     source: "date"    
     required: true
-  - property: platform
+  - name: platform
     param: "Airbnb"
-  - property: checkIn
+  - name: checkIn
     source: body
     function: date
     required: true
     param: "Check-in\\s+Checkout[\\s\\n]+[A-Z]{3}, (\\w+ \\d{1,2}(, \\d{4})?)"
-  - property: checkOut
+  - name: checkOut
     source: body
     function: date
     param: "Check-in\\s+Checkout[\\s\\n]+(?:[A-Z]{3}, \\w+ \\d{1,2}(?:, \\d{4})?[\\s\\n]+)[A-Z]{3}, (\\w+ \\d{1,2}(?:, \\d{4})?)"
-  - property: conf
+  - name: conf
     source: body
     function: text
     param: "CONFIRMATION CODE\\s+([A-Z0-9]+)"
     required: true
-  - property: guest
+  - name: guest
     source: subject
     function: text
     param: "Reservation confirmed - (.+) arrives"
-  - property: property
+  - name: property
     source: body
     function: text
     param: "(?<=airbnb\\.com/rooms/)([0-9]+)" 
-  - property: guestPaidTotal
+  - name: guestPaidTotal
     source: body
     function: amount
     param: "TOTAL \\(USD\\)\\s+\\$([0-9,]+\\.\\d{2})"
-  - property: cleaningFee
+  - name: cleaningFee
     source: body
     function: amount
     param: "Cleaning fee\\s+\\$([0-9,]+\\.\\d{2})"
-  - property: guestServiceFee
+  - name: guestServiceFee
     source: body
     function: amount
     param: "Guest service fee\\s+\\$([0-9,]+\\.\\d{2})"
-  - property: occupancyTaxes
+  - name: occupancyTaxes
     source: body
     function: amount
     param: "Occupancy taxes\\s+\\$([0-9,]+\\.\\d{2})"
-  - property: payout
+  - name: payout
     source: body
     function: amount
     param: "HOST PAYOUT[\\S\\s]*?TOTAL \\(USD\\)\\s+\\$([0-9,]+\\.\\d{2})"
-  - property: rent
+  - name: rent
     source: body
     function: amount
     param: "\\d+ Nights?\\s+\\$([0-9,.]+)"
-  - property: serviceFee
+  - name: serviceFee
     source: body
     function: amount
     param: "Service fee\\s+\\-\\$([0-9,]+\\.\\d{2})"

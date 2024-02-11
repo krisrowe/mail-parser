@@ -2,13 +2,14 @@ const fs = require('fs');
 const path = require('path');
 const { expect } = require('chai');
 const { extractValuesFromEmail } = require('../processor'); // Adjust the path as needed
+const SPEC_NAME = "airbnb-booking";
 
-describe('processor', function() {
+describe(SPEC_NAME, function() {
   let outputMessage; // Holds the extracted values
 
   before(async function() {
     // Load and parse the input JSON only once before all tests
-    const inputJsonPath = path.join(__dirname, 'data', 'email.json');
+    const inputJsonPath = path.join(__dirname, 'data', `${SPEC_NAME}.json`);
     const inputJson = JSON.parse(fs.readFileSync(inputJsonPath, 'utf8'));
     outputMessage = await extractValuesFromEmail(inputJson);
     console.log(JSON.stringify(outputMessage));
