@@ -12,6 +12,8 @@
 # below:
 .git
 .gitignore
+.vscode
+test
 secrets
 node_modules
 *.env
