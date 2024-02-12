@@ -27,7 +27,7 @@ async function parseEmail(message, context) {
         throw new Error("Invalid message format. Message must have 'data' or 'type'.");
     }
 
-    return await processMessageData(incomingData);
+    return await processMessageData(incomingData, messageId);
 }
 
 exports["handle-http"] = async (req, res) => {
@@ -41,7 +41,7 @@ exports["handle-http"] = async (req, res) => {
 };
   
 
-async function processMessageData(message) {
+async function processMessageData(message, id = null) {
     var processedData;
     try {
         processedData = await processor.extractValuesFromEmail(message);
@@ -59,16 +59,38 @@ async function processMessageData(message) {
         throw new Error('Output topic name must be specified using OUTPUT_TOPIC environment variable.');
     }
     console.log(`Publishing processed data to topic ${outputTopicName}.`);
-    await publishToTopic(outputTopicName, processedData);
-    
-    if (processedData.type) {
-        console.log(JSON.stringify({
-            severity: 'INFO',
-            message: `Published parsed message of type ${processedData.type} to topic ${outputTopicName}.`,
-          }));    
-    } else {
-        console.warn(`Published parsed message to topic ${outputTopicName}. No type attribute.`);
+    var outputMessageId;
+    try
+    {
+        outputMessageId = await publishToTopic(outputTopicName, processedData);
+    } catch (err) {
+        console.error("Error publishing message to topic: ", err);
+        // Raise a failure back to the invoking service so that the incoming
+        // message is not marked processed. 
+        throw err; 
     }
+    var logMessage = `Published transformed message to topic ${outputTopicName} as ${outputMessageId}.`
+    try 
+    {
+        if (id) {
+            logMessage += ` Source message id: ${id}.`;
+        }
+        // Add the actual message we published to the log output only 
+        // if the LOG_OUTPUT env var has been defined accordingly. 
+        // Note that this env var is not set to true by default, due
+        // to the concerns that sensitive data may be put in the logs.
+        if ((process.env.LOG_OUTPUT + "").trim().toLowerCase() == 'true') {
+            logMessage += ` Data: ${JSON.stringify(processedData)}`;
+        }        
+
+    } catch {
+        // extra log detail is not important enough to avoid logging anything at all and crashing
+    }
+    console.log(JSON.stringify({
+        severity: 'INFO',
+        message: logMessage,
+    }));    
+
 }
 
 
@@ -86,23 +108,10 @@ async function publishToTopic(topicName, data) {
     var success = false;
     var messageId;
     try {
-        messageId = await pubSubClient.topic(topicName).publishMessage({ data: dataBuffer });
-        success = true;
+        return await pubSubClient.topic(topicName).publishMessage({ data: dataBuffer });
     } catch (error) {
         console.error(`Error publishing message to topic ${topicName}: `, error);
-        success = false;
-    }
-    // Log outside the try/catch above to avoid misreporting a publish failure.
-    if (success) {
-        var logMessage = `Message id ${messageId} published to topic ${topicName}`;
-        // Add the actual message we published to the log output only 
-        // if the LOG_OUTPUT env var has been defined accordingly. 
-        // Note that this env var is not set to true by default, due
-        // to the concerns that sensitive data may be put in the logs.
-        if ((process.env.LOG_OUTPUT + "").trim().toLowerCase() == 'true') {
-            logMessage += `: ${messageJSON}`;
-        }
-        console.info(logMessage);
+        throw error;
     }
 }
 
