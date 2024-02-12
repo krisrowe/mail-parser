@@ -14,8 +14,10 @@
         "skipFiles": ["<node_internals>/**"],
         "timeout": 20000,
         "env": {
-          "GOOGLE_APPLICATION_CREDENTIALS": "${workspaceFolder}/secrets/service-account.json"
-        }
+          "GOOGLE_APPLICATION_CREDENTIALS": "${workspaceFolder}/secrets/service-account.json",
+          "OVERRIDE_SPEC_PATH": "test/data",
+          "OUTPUT_TOPIC": "booking-events"
+        }        
       },
       /*
       {

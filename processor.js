@@ -1,8 +1,8 @@
 const { load } = require('./specs');
 
 async function extractValuesFromEmail(emailData) {
-    if (!emailData) {
-        console.error('No email data received.');
+    if (!emailData || typeof emailData !== 'object') {
+        console.error('No email data received or not an object.');
         return; // Consider throwing an error here.
     }
     if (!emailData.type) {

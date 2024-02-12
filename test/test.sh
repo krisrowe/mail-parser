@@ -11,7 +11,7 @@ show_usage() {
 SCRIPT_DIR="$(dirname "$0")"
 
 # Default payload file path
-PAYLOAD_FILE="$SCRIPT_DIR/data/email-airbnb-new-booking.json"
+PAYLOAD_FILE="$SCRIPT_DIR/data/airbnb-booking.json"
 
 # Initialize URL variable
 URL=""
@@ -73,4 +73,4 @@ fi
 echo "Sending POST request to $URL with payload file: $PAYLOAD_FILE"
 
 # Send the POST request with the JSON payload to the determined URL
-curl -X POST -d @"$PAYLOAD_FILE" "$URL"
+curl -X POST -H "Content-Type: application/json" -d @"$PAYLOAD_FILE" "$URL"
