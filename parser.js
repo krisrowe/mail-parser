@@ -1,69 +1,111 @@
-/*
-const singleDateExp = "(?:Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)\\s\\d+(?:,\\s(\\d+))";
+const moment = require('moment-timezone');
 
-function findDateRange(sourceText) {
-  // Add a question mark at the end of the first single date expression, as the start date may or may not have a year,
-  // but the second date MUST have a year. Before requiring the second date to include a year, at least one email 
-  // resulted in a date range elsewhere in the email being matched (in the body), which was not the formal date range,
-  // and therefore, no year was captured.  
-  var exp = "(" + singleDateExp + "?)\\s-\\s(" + singleDateExp +")"; 
-  var regExp = new RegExp(exp, "gi");  // "i" is for case insensitive
-  var match = regExp.exec(sourceText);
-  if (match && match.length > 0) {
-    var result = { startDate: match[1], endDate: match[3] };
-    if (!match[2]) {
-      // When there is no year on the start date, use the year from the end date.
-      result.startDate += ", " + match[4];
+class Parser {
+  constructor() {
+    this._referenceDate = new Date();
+  }
+
+  get referenceDate() {
+    return this._referenceDate;
+  }
+
+  set referenceDate(value) {
+    this._referenceDate = value;
+  }
+
+  text(sourceText, regex) {
+    const regExp = new RegExp(regex, 'i'); // 'i' for case-insensitive
+    const match = regExp.exec(sourceText);
+  
+    if (match && match.length > 1) {
+        // match[1] contains the captured group
+        return match[1];
+    } else {
+        return ""; // or however you want to handle non-matches
     }
-    return result;
-  } else {
-    console.log("No date range found.");
+  }
+  
+  date(sourceText, regex) {
+    const regExp = new RegExp(regex, 'i');
+    const match = regExp.exec(sourceText);
+  
+    if (match && match.length > 1) {
+      let dateString = match[1].replace(' at ', ' ');
+      let yearNeedsCorrection = false;
+      let timeIncluded = false; // Initially assume time is not included
+  
+      // Define formats
+      let monthDayFormats = ['MMM D', 'MMMM D'];
+      let timeFormats = ['H:mm', 'HH:mm', 'H:mm A', 'HH:mm A']; // Formats to detect time
+      let formatsWithTime = timeFormats.map(timeFormat => `MMM D, YYYY ${timeFormat}`) // Date with time formats
+                                        .concat(timeFormats.map(timeFormat => `MMMM D, YYYY ${timeFormat}`));
+      let formatsWithYearOnly = ['MMM D, YYYY', 'MMMM D, YYYY']; // Date without time formats
+  
+      // First check: Try parsing with month and day only to see if year needs correction
+      let parsedDate = moment(dateString, monthDayFormats, true);
+      if (parsedDate.isValid()) {
+        yearNeedsCorrection = true;
+      } else {
+        // Next, try to parse with formats that include time
+        parsedDate = moment(dateString, formatsWithTime, true);
+        if (parsedDate.isValid()) {
+          timeIncluded = true; // Successfully parsed a format with time
+        } else {
+          // If no time included, try formats with year only (no time)
+          parsedDate = moment(dateString, formatsWithYearOnly, true);
+        }
+      }
+  
+      if (parsedDate.isValid()) {
+        if (yearNeedsCorrection) {
+          // Adjust the year based on reference or current year
+          const year = this.referenceDate ? this.referenceDate.getFullYear() : new Date().getFullYear();
+          parsedDate.year(year);
+        }
+  
+        // Handle timezone if necessary and time is included
+        if (timeIncluded) {
+          const timezone = process.env.EMAIL_TIMEZONE;
+          if (timezone) {
+            parsedDate = parsedDate.tz(timezone, true);
+          } else {
+            console.warn('EMAIL_TIMEZONE environment variable is not set.');
+          }
+        }
+  
+        // Decide on return type based on whether time was included
+        if (timeIncluded) {
+          return parsedDate.toDate(); // Return JavaScript Date object for full date/time
+        } else {
+          return parsedDate.format('YYYY-MM-DD'); // Return string for date-only
+        }
+      } else {
+        // Log a debug message when parsing fails
+        console.debug(`Unable to parse date from input: '${sourceText}'`);
+        return null; // Date is invalid or does not match any format
+      }
+    } else {
+      // Log a debug message when no match is found
+      console.debug(`No date match found in input: '${sourceText}'`);
+      return null; // No match found
+    }
+  }  
+  
+  amount(sourceText, regex) {
+    const regExp = new RegExp(regex, 'i');
+    const match = regExp.exec(sourceText);
+  
+    if (match && match.length > 1) {
+        // Convert captured string to a number, removing commas
+        return parseFloat(match[1].replace(/,/g, ''));
+    } else {
+        return 0; // or however you want to handle non-matches
+    }
+  }
+  
+  literal(sourceText, value) {
+    return value;
   }
 }
-*/
 
-function text(sourceText, regex) {
-  const regExp = new RegExp(regex, 'i'); // 'i' for case-insensitive
-  const match = regExp.exec(sourceText);
-
-  if (match && match.length > 1) {
-      // match[1] contains the captured group
-      return match[1];
-  } else {
-      return ""; // or however you want to handle non-matches
-  }
-}
-
-function date(sourceText, regex) {
-  const regExp = new RegExp(regex, 'i');
-  const match = regExp.exec(sourceText);
-
-  if (match && match.length > 1) {
-      // Parse the date string into components
-      const [month, day] = match[1].split(' ');
-      const currentDate = new Date();
-      const year = currentDate.getFullYear(); // Assuming the year is the current year
-      const dateStr = `${month} ${day}, ${year} 00:00:00`;
-      return new Date(dateStr);
-  } else {
-      return null; // or a default Date, as per your requirement
-  }
-}
-
-function amount(sourceText, regex) {
-  const regExp = new RegExp(regex, 'i');
-  const match = regExp.exec(sourceText);
-
-  if (match && match.length > 1) {
-      // Convert captured string to a number, removing commas
-      return parseFloat(match[1].replace(/,/g, ''));
-  } else {
-      return 0; // or however you want to handle non-matches
-  }
-}
-
-function literal(sourceText, value) {
-  return value;
-}
-
-module.exports = { text, date, amount, literal };
+module.exports = Parser;

@@ -33,21 +33,11 @@ describe(SPEC_NAME, function() {
   });
   
   it('should correctly parse the check-in date', function() {
-    // Parse the expected date string to a JS Date object
-    const expectedCheckInDate = new Date('2024-01-16T06:00:00.000Z');
-    // Access the actual Date object from your output JSON
-    const actualCheckInDate = new Date(outputMessage.checkIn);
-    // Compare the numeric values of the two dates
-    expect(actualCheckInDate.getTime()).to.equal(expectedCheckInDate.getTime());
+    expect(outputMessage).to.have.property('checkIn', '2024-01-16');
   });
   
   it('should correctly parse the check-out date', function() {
-    // Parse the expected date string to a JS Date object
-    const expectedCheckOutDate = new Date('2024-01-18T06:00:00.000Z');
-    // Access the actual Date object from your output JSON
-    const actualCheckOutDate = new Date(outputMessage.checkOut);
-    // Compare the numeric values of the two dates
-    expect(actualCheckOutDate.getTime()).to.equal(expectedCheckOutDate.getTime());
+    expect(outputMessage).to.have.property('checkOut', '2024-01-18');
   });
   
   it('should correctly parse the confirmation number', function() {

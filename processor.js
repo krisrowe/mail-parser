@@ -21,15 +21,19 @@ async function extractValuesFromEmail(emailData) {
     console.info(`Loaded ${rules.length} rules for message type ${emailData.type}.`);
 
     let result = {};
-    const parserModule = require('./parser.js'); // Ensure this path is correct
+    const ParserModule = require('./parser.js');
+    const parser = new ParserModule();
+    if (emailData.date) {
+        parser.referenceDate = new Date(emailData.date);
+    }
 
     for (const rule of rules) {
         if (rule.function) {
-            // Check if the function exists in the parserModule
-            if (typeof parserModule[rule.function] === 'function') {
+            // Check if the function exists on the parser
+            if (typeof parser[rule.function] === 'function') {
                 // Determine the appropriate source text or null if not applicable
                 let sourceText = rule.source && emailData[rule.source] ? emailData[rule.source] : null;
-                result[rule.name] = parserModule[rule.function](sourceText, rule.param);
+                result[rule.name] = parser[rule.function](sourceText, rule.param);
                 console.log(`Processed content for property ${rule.name} using function ${rule.function}.`);
             } else {
                 // Function specified is not found in the parser module

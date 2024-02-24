@@ -29,7 +29,7 @@ steps:
       - '--service-account=${_ACCOUNT_NAME}@${_TARGET_PROJECT_ID}.iam.gserviceaccount.com'
       - '--region=${_REGION}'
       - '--no-allow-unauthenticated'
-      - '--set-env-vars=CONFIG_BUCKET=gs://${_CONFIG_BUCKET},OUTPUT_TOPIC=${_OUTPUT_TOPIC},LOG_OUTPUT=${_LOG_OUTPUT}'
+      - '--set-env-vars=CONFIG_BUCKET=gs://${_CONFIG_BUCKET},OUTPUT_TOPIC=${_OUTPUT_TOPIC},LOG_OUTPUT=${_LOG_OUTPUT},EMAIL_TIMEZONE=${_EMAIL_TIMEZONE}'
       - '--project=$_TARGET_PROJECT_ID'
 
 substitutions:
@@ -39,6 +39,7 @@ substitutions:
   _REGION: '$LOCATION'
   _CONFIG_BUCKET: mail-parsing-config
   _OUTPUT_TOPIC: ''
+  _EMAIL_TIMEZONE: 'America/Chicago'
   _LOG_OUTPUT: 'false'
 
 options:

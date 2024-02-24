@@ -23,7 +23,8 @@
     "config": "^3.3.10",
     "dotenv": "^16.4.1",
     "googleapis": "^131.0.0",
-    "js-yaml": "^4.1.0"
+    "js-yaml": "^4.1.0",
+    "moment-timezone": "^0.5.45"
   },
   "devDependencies": {
     "chai": "^4.4.1",

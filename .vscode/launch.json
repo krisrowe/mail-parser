@@ -5,12 +5,11 @@
     "version": "0.2.0",
     "configurations": [
       {
-        "type": "pwa-node",
+        "type": "node",
         "request": "launch",
         "name": "Debug mail-parser",
         "runtimeExecutable": "npm",
         "runtimeArgs": ["run", "start"],
-        "port": 9229,
         "skipFiles": ["<node_internals>/**"],
         "timeout": 20000,
         "env": {

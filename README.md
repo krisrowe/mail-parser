@@ -107,6 +107,7 @@ The following environment variables must be defined with your own values.
 These are required to run, and there are no defaults assumed in the code.
 ```bash
 OUTPUT_TOPIC=my-events # example only
+EMAIL_TIMEZONE=America/Chicago # example only
 ```
 ## Optional overrides to alter behavior
 Environment variables below are shown with the *default* values assumed
