@@ -26,6 +26,14 @@ class Parser {
   }
   
   date(sourceText, regex) {
+    // Replace narrow no-break spaces (U+202F) with standard spaces
+    // since neither a typical regex nor the moment library expects
+    // to see non-standard space characters delimiting a date/time.
+    // This type of character was found separating the time in the
+    // forwarded email from the AM/PM designation, presumably used to
+    // avoid the AM/PM from ever being shown on a separate line.
+    sourceText = sourceText.replace(/\u202F/g, ' ');
+    // Process the specified regular expression against the text.
     const regExp = new RegExp(regex, 'i');
     const match = regExp.exec(sourceText);
   

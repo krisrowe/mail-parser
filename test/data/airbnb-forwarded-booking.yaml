@@ -6,7 +6,7 @@ properties:
     source: "body"
     required: true
     function: date
-    param: "Date:\\s*(?:[A-Za-z]+,\\s+)?([A-Za-z]+\\s+\\d{1,2}(?:,\\s+\\d{4})?)(?=\\D|$)"
+    param: "Date:\\s*(?:[A-Za-z]+,\\s+)?([A-Za-z]+\\s+\\d{1,2}(?:,\\s+\\d{4})?(?:\\s+at)?\\s+\\d{1,2}:\\d{2}\\s*[AP]M)"
   - name: platform
     param: "Airbnb"
   - name: checkIn

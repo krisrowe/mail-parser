@@ -23,6 +23,15 @@ describe(SPEC_NAME, function() {
     expect(outputMessage).to.have.property('type', 'booking');
   });
 
+  it('should correctly parse the received date', function() {
+    const moment = require('moment-timezone');
+    const dateStr = "Jan 12, 2024 2:31 PM";
+    const iso8601 = moment.tz(dateStr, "MMM D, YYYY h:mm A", "America/Chicago").utc().format();
+    const receivedIso = moment(outputMessage.received).utc().format();
+    expect(receivedIso).to.equal(iso8601);
+  });
+  
+
   it('should correctly identify the guest name', function() {
     expect(outputMessage).to.have.property('guest', 'James Smith Sr');
   });
